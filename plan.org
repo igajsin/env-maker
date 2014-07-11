@@ -1,0 +1,7 @@
+* для соединения используем vbox+ssh://user@example.com/session
+* виртуалки создаются из xml-файлов см http://libvirt.org/drvvbox.html
+* утилита делает две вещи:
+** откатывает снапшоты к определённому состоянию
+   http://libvirt.org/storage.html
+** создавать предопределённые сетевые конфигурации
+   http://libvirt.org/archnetwork.html
