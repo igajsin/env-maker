@@ -1,7 +1,9 @@
 env-maker
 =========
 
-Script for making environment before test.
-There are two thing it does:
-a) first --- revert snapshot to predefined state.
-b) second --- make custom networks.
+Script for make a environment using system test.
+For this it:
+a) find all system tests for vcenter or nsx.
+b) find all iso.
+c) create menu for choosing environment
+d) launch tpi_systest with given parameters or doing this work standalone
