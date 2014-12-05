@@ -5,6 +5,8 @@
 (use-modules (ice-9 getopt-long))
 (use-modules (scsh syntax))
 (use-modules (ice-9 regex))
+(use-modules (srfi srfi-1))
+(use-modules (ice-9 format))
 
 (define option-spec '((version (single-char #\v) (value #f))
 			   (help (single-char #\h) (value #f))
@@ -47,19 +49,30 @@ Usage: env-maker.scm [options]
     (d dialog --title "Fuel master iso not found" --msgbox "Please set correct path to fuel master iso" 5 40)
     (quit)))
 
+(define (fltr rx-list str-list)
+  (define (flt rx sl)
+    (map match:substring 
+	 (filter (lambda (x) x) 
+		 (map (lambda (x)
+			(string-match rx x)) sl))))
+  (fold flt str-list rx-list))
+
 (define (find-test-group path)
   (let* ((test-path (string-append path "/fuelweb_test/tests"))
-	 (fls (run/strings (find ,test-path -type f -name "*.py")))
-	 (s1 (map (lambda (fl) (run/string (grep vcenter ,fl)))  fls))
-	 (s2 s1))
-    (display s2)))
+	 (fls (run/strings
+	       (pipe
+		(find ,test-path -type f -name "*.py")
+		(xargs grep groups)
+		(grep vcenter))))
+	 (fls2 (map (lambda (s) (cadr (string-split s #\:))) fls)))
+    (format #t "~{~a~%~}" (fltr '("\".*\"" "[a-z|_]+" ".*nsx.*") fls2))))
 
 (define (set-test-group path)
   (when (not (file-exists? path))
     (let ((error-message (string-append path " not found")))
       (d dialog --title "Critical error" --msgbox ,error-message 5 40))
     (quit))
-  (display (find-test-group path)))
+  (find-test-group path))
 
 
 (define (main args)
@@ -77,7 +90,5 @@ Usage: env-maker.scm [options]
     (when (not os) (set! os (set-os oses)))
     (when (not test-group) (set! test-group (set-test-group fuel-main)))
     (when node-num
-      (display node-num) (newline))
-    (when os
-      (display os) (newline))))
+      (display node-num) (newline))))
 
