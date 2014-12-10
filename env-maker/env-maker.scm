@@ -45,7 +45,10 @@ Usage: env-maker.scm [options]
 	(quit)))
 
 (define (check-iso iso)
-  (when (or (not iso) (not (file-exists? iso)))
+  (when (or (not iso)
+	    (not (file-exists? iso))
+	    (not (regexp-exec (make-regexp "ISO")
+			      (run/string (file ,iso)))))
     (d dialog --title "Fuel master iso not found" --msgbox "Please set correct path to fuel master iso" 5 40)
     (quit)))
 
@@ -62,8 +65,7 @@ Usage: env-maker.scm [options]
 	 (fls (run/strings
 	       (pipe
 		(find ,test-path -type f -name "*.py")
-		(xargs grep groups)
-		(grep vcenter))))
+		(xargs grep groups))))
 	 (fls2 (map (lambda (s) (cadr (string-split s #\:))) fls)))
     (format #t "~{~a~%~}" (fltr '("\".*\"" "[a-z|_]+" ".*nsx.*") fls2))))
 
