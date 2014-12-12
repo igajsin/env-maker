@@ -24,6 +24,9 @@
 		   (run/string (cat ,fl)))))
     r))
 
+(define (wrong-os? os)
+  (null? (filter (lambda (x) (string-ci= os (cdr x))) oses)))
+
 (define (set-os os)
   (assoc-ref os (d dialog --cancel-label Quit --menu "Choose OS" 10 30 2 1 Ubuntu 2 CentOS)))
 
@@ -67,14 +70,15 @@ Usage: env-maker.scm [options]
 		(find ,test-path -type f -name "*.py")
 		(xargs grep groups))))
 	 (fls2 (map (lambda (s) (cadr (string-split s #\:))) fls)))
-    (format #t "~{~a~%~}" (fltr '("\".*\"" "[a-z|_]+" ".*nsx.*") fls2))))
+    (format #f "~{~a~%~}" (fltr '("\".*\"" "[a-z|_]+" ".*(vcenter|nsx).*") fls2))))
 
 (define (set-test-group path)
+  (display "set-test-group\n")
   (when (not (file-exists? path))
     (let ((error-message (string-append path " not found")))
       (d dialog --title "Critical error" --msgbox ,error-message 5 40))
     (quit))
-  (find-test-group path))
+  (display (find-test-group path)))
 
 
 (define (main args)
@@ -89,7 +93,8 @@ Usage: env-maker.scm [options]
     (help-message help-wanted)
     (version-message version-wanted)
     (check-iso iso)
-    (when (not os) (set! os (set-os oses)))
+    (when (wrong-os? os) (set! os (set-os oses)))
+    (display (string-append "os is " os "\n"))
     (when (not test-group) (set! test-group (set-test-group fuel-main)))
     (when node-num
       (display node-num) (newline))))
